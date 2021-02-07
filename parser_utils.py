@@ -27,12 +27,6 @@ def insert_models(data):
         # добавляем model в таблицу models
         model_id = db_utils.insert_model(model, brand_id)
 
-        # добовляем model в таблицу spr_details
-        # spr_details_id = db_utils.insert_spr_details(model)
-
-        # линкуем model и spr_details в таблице link_models_spr_details
-        # details_id = sdbu.link_models_spr_details(model_id, spr_details_id)
-
         gd.g_data.append({
             brand: brand_id,
             model: model_id,
@@ -41,26 +35,31 @@ def insert_models(data):
 
 def data_analysis(data):
     old_brand = ''
-    parsed_model = False
     parsed_models = fu.load_parsed_models('parsed_models.csv', 'utf-8')
     for d in data:
+        brand_id = 0
+        brand = d[0]
         model = d[1]
+        parsed_bool = False
         print()
 
-        if model in parsed_models[0]:
-            print(model, '-', 'PARSED')
+        for pm in parsed_models:
+            if model == pm[0]:
+                parsed_bool = True
+                print(model, '-', 'PARSED')
+                break
+
+        if parsed_bool:
             continue
 
         print(model, datetime.now().strftime("%X"))
         model_id = 0
-        # details_id = 0
         for key in gd.g_data:
             if model in key.keys():
+                brand_id = key[brand]
                 model_id = key[model]
-                # details_id = key['details_id']
                 break
 
-        brand = d[0]
         if brand != old_brand:
             gd.erc_data = []
             gd.parts_data = []
@@ -73,6 +72,6 @@ def data_analysis(data):
         if d[3]:
             erc_parser.insert_erc(model_id, d[3])
         if d[4]:
-            parts_utils.insert_parts(model_id, d[4])
+            parts_utils.insert_parts(brand_id, model_id, d[4])
 
         fu.save_parsed_models('parsed_models.csv', 'utf-8', model)

@@ -23,7 +23,6 @@ def insert_erc(model_id, fn):
             if d[1] and str(d[1]) != 'nan':
                 display_id = erc_db.insert_dict_error_code('dictionary_error_code', 'text_en', d[1])
                 code_data.update({'display': display_id})
-                # erc_code_id = erc_db.insert_error_code(erc_code_id, 'display', d[1], model_id)
             else:
                 code_data.update({'display': 0})
 
@@ -31,7 +30,6 @@ def insert_erc(model_id, fn):
             if d[1] and str(d[1]) != 'nan':
                 spr_image_id = erc_db.insert_dict_error_code('dictionary_error_code_image', 'image', d[1])
                 code_data.update({'image_id': spr_image_id})
-                # erc_db.update_code(erc_code_id, 'image_id', spr_image_id)
             else:
                 code_data.update({'remedy_id': 0})
 
@@ -39,7 +37,6 @@ def insert_erc(model_id, fn):
             if d[1] and str(d[1]) != 'nan':
                 spr_erc_code_id = erc_db.insert_dict_error_code('dictionary_error_code', 'text_en', d[1])
                 code_data.update({'description_id': spr_erc_code_id})
-                # erc_db.update_code(erc_code_id, 'description_id', spr_erc_code_id)
             else:
                 code_data.update({'remedy_id': 0})
 
@@ -47,7 +44,6 @@ def insert_erc(model_id, fn):
             if d[1] and str(d[1]) != 'nan':
                 spr_erc_code_id = erc_db.insert_dict_error_code('dictionary_error_code', 'text_en', d[1])
                 code_data.update({'causes_id': spr_erc_code_id})
-                # erc_db.update_code(erc_code_id, 'causes_id', spr_erc_code_id)
             else:
                 code_data.update({'causes_id': 0})
 
@@ -55,12 +51,5 @@ def insert_erc(model_id, fn):
             if d[1] and str(d[1]) != 'nan':
                 spr_erc_code_id = erc_db.insert_dict_error_code('dictionary_error_code', 'text_en', d[1])
                 code_data.update({'remedy_id': spr_erc_code_id})
-                # erc_db.update_code(erc_code_id, 'remedy_id', spr_erc_code_id)
             else:
                 code_data.update({'remedy_id': 0})
-
-        # try:
-        #     if erc_code_id and str(d[1]) != 'nan':
-        #         erc_db.insert_link_model_error_code(model_id, erc_code_id)
-        # except:
-        #     continue
