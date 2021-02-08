@@ -1,5 +1,6 @@
 import re
 import file_utils as fu
+import generat_article_code as gac
 from parts import parts_db_utils
 from global_data import parts_data
 
@@ -11,7 +12,6 @@ def insert_parts(brand_id, model_id, fn):
     old_img = ''
     for d in data:
         module_id = 0
-        pc_id = 0
         pn_id = 0
         try:
             print(f'\rpart code: {d[0]} - {d[1]}', end='')
@@ -36,7 +36,7 @@ def insert_parts(brand_id, model_id, fn):
                         f'(?<=PANEL)\d$|',
                         f'\d/\d$|',
                         f'\(\d/\d\)|',
-                        f'\(\d\)$'
+                        f'\(\d\)$',
                         f'\(\d\u0020/\u0020\d\)|',
                         f'(?<=sheet tray insert\u0020)\d$|',
                         f'(?<=sheet tray insert)\d$|',
@@ -161,7 +161,7 @@ def insert_parts(brand_id, model_id, fn):
                 old_img = d[4]
 
         # добавляем в partcodes новый парткод
-        if d[1]:
+        if d[1] or str(d[1] != 'nan'):
             pc_id = get_id('pc', d[1])
             if pc_id < 1:
                 pc_id = parts_db_utils.insert_partcodes(d[1], d[3], pn_id, brand_id)
@@ -169,6 +169,9 @@ def insert_parts(brand_id, model_id, fn):
                     'id': pc_id,
                     'pc': d[1]
                 })
+        else:
+            article_code = gac.generate_article_partcode()
+            pc_id = parts_db_utils.insert_partcodes_article(article_code, d[3], pn_id, brand_id)
 
         # линкуем парткод-модель-модуль
         parts_db_utils.link_model_module_partcode(pc_id, model_id, module_id)

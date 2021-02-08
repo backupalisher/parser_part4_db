@@ -48,3 +48,12 @@ def link_model_module_partcode(pc_id, model_id, module_id):
                  f'(INSERT INTO link_model_module_partcode (partcode_id, model_id, module_id) '
                  f'SELECT {pc_id}, {model_id}, {module_id} WHERE NOT EXISTS '
                  f'(SELECT 1 FROM s) RETURNING 0) SELECT * FROM i UNION ALL SELECT * FROM s')
+
+
+def insert_partcodes_article(article_code, description, pn_id, brand_id):
+    q = db.i_request(f"WITH s as (SELECT id FROM partcodes "
+                     f"WHERE LOWER(article_code) = LOWER('{article_code}') AND manufacturer = {brand_id}), i as "
+                     f"(INSERT INTO partcodes (article_code, description, manufacturer, dictionary_partcode_id) "
+                     f"SELECT '{article_code}', '{description}', {brand_id}, {pn_id}"
+                     f"WHERE NOT EXISTS (SELECT 1 FROM s) RETURNING id) SELECT id FROM i UNION ALL SELECT id FROM s")
+    return q[0][0]
