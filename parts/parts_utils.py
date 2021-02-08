@@ -19,17 +19,116 @@ def insert_parts(brand_id, model_id, fn):
             pass
         # добавляем модуль
         if d[0]:
-            module_name = re.sub(f'\(\d\u0020of\u0020\d\)|\d\u0020of\u0020\d|\(\dof\d\)|[.?ARDF\u0020]\d$'
-                                 f'[.?components\u0020]\d$|[ADF\u0020]\d$|[ADF]\d$|[PANEL\u0020]\d$|\(\d/\d\)|'
-                                 f'\(\d\u0020/\u0020\d\)|[.?sheet tray insert\u0020]\d$|[.?pick\u0020]\d$|'
-                                 f'[.?CASSETTE\u0020]\d$|[.?Assembly\u0020]\(\d\)$|[.?Assembly\u0020]\d$|'
-                                 f'[.?SECTION\u0020]\d$|[.?Paper pick\u0020]\d$|[.?Tray\u0020]\d$|[.?LABELS\s]\d$'
-                                 f'[.?Frame\u0020]\d$|[.?CASSETTE\u0020]\d$|[.?CASSETTE\u0020]\(\d\)$|'
-                                 f'\(\u0020\d\u0020/\u0020\d\u0020\)$|\(\d\)$|\(\u0020\d\u0020\)$|[.?ASSY\u0020]\d$|'
-                                 f'[.?ASSEMBLY\u0020]\d$|[.?ASSEMBLY\u0020]\(\d\)$|[.?sensors\u0020]\d$'
-                                 f'[ADF (Registration Section)]\d$|[.?SECTION\u0020]\(\d\)$|'
-                                 f'[.?assemblies\s]\d$|[.?Covers\s]\d$|[.?components]\s\d$', '', d[0], re.I).strip()
-            module_name = re.sub(f'\u0020{2,}', '\u0020', module_name)
+            bad_list = [f'\(\d\u0020of\u0020\d\)|',
+                        f'\d\u0020of\u0020\d|',
+                        f'\(\dof\d\)|',
+                        f'(?<=Base\u0020)\d$',
+                        f'(?<=Base)\d$',
+                        f'(?<=Electrical\u0020)\d$',
+                        f'(?<=Electrical)\d$',
+                        f'(?<=ARDF\u0020)\d$',
+                        f'(?<=ARDF)\d$',
+                        f'(?<=components\u0020)\d$|',
+                        f'(?<=ADF\u0020)\d$|',
+                        f'(?<=ADF)\d$|',
+                        f'(?<=PANEL\u0020)\d$|',
+                        f'(?<=PANEL)\d$|',
+                        f'\d/\d$|',
+                        f'\(\d/\d\)|',
+                        f'\(\d\)$'
+                        f'\(\d\u0020/\u0020\d\)|',
+                        f'(?<=sheet tray insert\u0020)\d$|',
+                        f'(?<=sheet tray insert)\d$|',
+                        f'(?<=maker\u0020)\d$|',
+                        f'(?<=maker)\d$|',
+                        f'(?<=Folder\u0020)\d$|',
+                        f'(?<=Folder)\d$|',
+                        f'(?<=ADU\u0020)\d$|',
+                        f'(?<=ADU)\d$|',
+                        f'(?<=pick\u0020)\d$|',
+                        f'(?<=pick)\d$|',
+                        f'(?<=CASSETTE\u0020)\d$|',
+                        f'(?<=CASSETTE)\d$|',
+                        f'(?<=SECTION\u0020)\(\d\)$|',
+                        f'(?<=SECTION)\(\d\)$|',
+                        f'(?<=Assembly\u0020)\(\d\)$|',
+                        f'(?<=Assembly)\(\d\)$|',
+                        f'(?<=Assembly\u0020)\d$|',
+                        f'(?<=Assembly)\d$|',
+                        f'(?<=Area\u0020)\(\d\)$|',
+                        f'(?<=Area)\(\d\)$|',
+                        f'(?<=Area\u0020)\d$|',
+                        f'(?<=Area)\d$|',
+                        f'(?<=Option\u0020)\d$|',
+                        f'(?<=Option)\d$|',
+                        f'(?<=SECTION\u0020)\d$|',
+                        f'(?<=SECTION)\d$|',
+                        f'(?<=Carriage\u0020)\(\d\)$|',
+                        f'(?<=Carriage)\(\d\)$|',
+                        f'(?<=Carriage\u0020)\d$|',
+                        f'(?<=Carriage)\d$|',
+                        f'(?<=diagram\u0020)\d$|',
+                        f'(?<=diagram)\d$|',
+                        f'(?<=Paper pick\u0020)\d$|',
+                        f'(?<=Paper pick)\d$|',
+                        f'(?<=Tray\u0020)\d$|',
+                        f'(?<=Tray)\d$|',
+                        f'(?<=HARDWARE\u0020)\d$|',
+                        f'(?<=HARDWARE)\d$|',
+                        f'(?<=ETC\.\u0020)\d$|',
+                        f'(?<=ETC\.)\d$|',
+                        f'(?<=DOOR ASSEMBLY\u0020)\d$|',
+                        f'(?<=DOOR ASSEMBLY)\d$|',
+                        f'(?<=ASSEMBLY, RIGHT\u0020)\d$|',
+                        f'(?<=ASSEMBLY, RIGHT)\d$|',
+                        f'(?<=Feed\u0020)\(\d\)$|',
+                        f'(?<=Feed)\(\d\)$|',
+                        f'(?<=unit\u0020)\(\d\)$|',
+                        f'(?<=unit)\(\d\)$|',
+                        f'(?<=unit\u0020)\d$|',
+                        f'(?<=unit)\d$|',
+                        f'(?<=Feed\u0020)\d$|',
+                        f'(?<=Feed)\d$|',
+                        f'(?<=LABELS\u0020)\(\d\)$|',
+                        f'(?<=LABELS)\(\d\)$|',
+                        f'(?<=LABELS\u0020)\d$|',
+                        f'(?<=LABELS)\d$|',
+                        f'(?<=Frame\u0020)\d$|',
+                        f'(?<=Frame)\d$|',
+                        f'(?<=CASSETTE\u0020)\(\d\)$|',
+                        f'(?<=CASSETTE)\(\d\)$|',
+                        f'\(\u0020\d\u0020/\u0020\d\u0020\)$|',
+                        f'\(\d\)$|',
+                        f'\(\u0020\d\u0020\)$|',
+                        f'(?<=insert\u0020)\d$|',
+                        f'(?<=insert)\d$|',
+                        f'(?<=ASSY\u0020)\d$|',
+                        f'(?<=ASSY)\d$|',
+                        f'(?<=ASSEMBLY\u0020)\d$|',
+                        f'(?<=ASSEMBLY)\d$|',
+                        f'(?<=ASSEMBLY\u0020)\(\d\)$|',
+                        f'(?<=ASSEMBLY)\(\d\)$|',
+                        f'(?<=sensors\u0020)\d$|',
+                        f'(?<=sensors)\d$|',
+                        f'(?<=\(Registration Section\))\d$|',
+                        f'(?<=assemblies\u0020)\d$|',
+                        f'(?<=assemblies)\d$|',
+                        f'(?<=PLATE\u0020)\d$|',
+                        f'(?<=PLATE)\d$|',
+                        f'(?<=Covers\u0020)\d$|',
+                        f'(?<=Covers)\d$|',
+                        f'(?<=components)\(\d\)$|',
+                        f'(?<=components\u0020)\(\d\)$|',
+                        f'(?<=components\u0020)\d$|',
+                        f'(?<=components)\d$',
+                        f'\W$|']
+
+            for bl in bad_list:
+                module_name = re.sub(f'{bl}', '', module_name, flags=re.IGNORECASE).strip()
+
+            module_name = re.sub(f'[\u0020]\W', '', module_name).strip()
+            module_name = re.sub(f'\u0020{2,}', '\u0020', module_name).strip()
+
             if old_module != module_name:
                 old_module = module_name
                 module_id = get_id('module', module_name)

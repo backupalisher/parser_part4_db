@@ -6,6 +6,7 @@ def insert_brand(brand):
                      f"WHERE LOWER(name) = LOWER('{brand}')), i as "
                      f"(INSERT INTO brands (name) SELECT '{brand}' "
                      f"WHERE NOT EXISTS (SELECT 1 FROM s) RETURNING id) SELECT id FROM i UNION ALL SELECT id FROM s")
+    return q[0][0]
 
 
 def insert_model(model, brand_id):
