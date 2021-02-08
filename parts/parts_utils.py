@@ -19,6 +19,7 @@ def insert_parts(brand_id, model_id, fn):
             pass
         # добавляем модуль
         if d[0]:
+            module_name = d[0]
             bad_list = [f'\(\d\u0020of\u0020\d\)|',
                         f'\d\u0020of\u0020\d|',
                         f'\(\dof\d\)|',
