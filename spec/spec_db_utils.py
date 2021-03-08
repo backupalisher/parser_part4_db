@@ -3,8 +3,8 @@ from db import db
 
 def insert_dictionary_model_options(data):
     q = db.i_request(f"WITH s as (SELECT id FROM dictionary_model_options "
-                     f"WHERE LOWER(text_en) = LOWER('{data}')), i as "
-                     f"(INSERT INTO dictionary_model_options (text_en) SELECT '{data}' "
+                     f"WHERE LOWER(text_ru) = LOWER('{data}')), i as "
+                     f"(INSERT INTO dictionary_model_options (text_ru) SELECT '{data}' "
                      f"WHERE NOT EXISTS (SELECT 1 FROM s) RETURNING id) SELECT id FROM i UNION ALL SELECT id FROM s")
     return q[0][0]
 

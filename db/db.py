@@ -1,7 +1,9 @@
 import psycopg2
 
+from main import logger
+
 con = psycopg2.connect(
-    database="new_part4",
+    database="new_part4_2",
     user="part4",
     password="part4_GfhjkzYtn321",
     # user="zapchasty",
@@ -20,6 +22,7 @@ def i_request(q):
         data = cur.fetchall()
     except psycopg2.DatabaseError as err:
         if err.pgerror:
+            logger.error(q)
             print("Error: ", err)
     else:
         return data

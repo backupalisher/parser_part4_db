@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from db import db
 import re
 import file_utils as fu
@@ -5,6 +7,7 @@ from spec import spec_db_utils as sdbu
 from global_data import dict_model_options_data, model_options_data
 
 
+@sync_to_async
 def insert_options(model_id, fn):
     model_option_id = 0
     caption_parent_id = 0
@@ -15,10 +18,10 @@ def insert_options(model_id, fn):
     data = fu.load_parsed_models(fn, 'Windows-1251')
     for d in data:
         if d:
-            try:
-                print(f'\rspecifications: {d[0]} - {d[1]}', end='')
-            except:
-                pass
+            # try:
+            #     print(f'\rspecifications: {d[0]} - {d[1]}', end='')
+            # except:
+            #     pass
 
             name = d[0]
             value = re.sub(r'(\smm+$)|(\sмм+$)|(\sстр+$)|(\sстр/мин$)|(\sкг$)|'

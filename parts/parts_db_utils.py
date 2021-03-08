@@ -53,7 +53,11 @@ def link_model_module_partcode(pc_id, model_id, module_id):
 def insert_partcodes_article(article_code, description, pn_id, brand_id):
     q = db.i_request(f"WITH s as (SELECT id FROM partcodes "
                      f"WHERE LOWER(article_code) = LOWER('{article_code}') AND manufacturer = {brand_id}), i as "
-                     f"(INSERT INTO partcodes (article_code, description, manufacturer, dictionary_partcode_id) "
-                     f"SELECT '{article_code}', '{description}', {brand_id}, {pn_id}"
+                     f"(INSERT INTO partcodes (code, article_code, description, manufacturer, dictionary_partcode_id) "
+                     f"SELECT '{article_code}', '{article_code}', '{description}', {brand_id}, {pn_id}"
                      f"WHERE NOT EXISTS (SELECT 1 FROM s) RETURNING id) SELECT id FROM i UNION ALL SELECT id FROM s")
     return q[0][0]
+
+
+def get_articles():
+    return db.i_request(f"SELECT article_code FROM partcodes WHERE article_code IS NOT NULL")

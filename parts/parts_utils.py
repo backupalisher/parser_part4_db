@@ -1,10 +1,14 @@
 import re
+
+from asgiref.sync import sync_to_async
+
 import file_utils as fu
 import generat_article_code as gac
 from parts import parts_db_utils
 from global_data import parts_data
 
 
+@sync_to_async
 def insert_parts(brand_id, model_id, fn):
     data = fu.load_parsed_models(fn, 'utf-8')
     old_module = ''
@@ -13,22 +17,23 @@ def insert_parts(brand_id, model_id, fn):
     for d in data:
         module_id = 0
         pn_id = 0
-        try:
-            print(f'\rpart code: {d[0]} - {d[1]}', end='')
-        except:
-            pass
+        pc_id = 0
+        # try:
+        #     print(f'\rpart code: {d[0]} - {d[1]}', end='')
+        # except:
+        #     pass
         # добавляем модуль
-        if d[0]:
+        if d[0] and str(d[0]) != 'nan':
             module_name = d[0]
             bad_list = [f'\(\d\u0020of\u0020\d\)|',
                         f'\d\u0020of\u0020\d|',
                         f'\(\dof\d\)|',
-                        f'(?<=Base\u0020)\d$',
-                        f'(?<=Base)\d$',
-                        f'(?<=Electrical\u0020)\d$',
-                        f'(?<=Electrical)\d$',
-                        f'(?<=ARDF\u0020)\d$',
-                        f'(?<=ARDF)\d$',
+                        f'(?<=Base\u0020)\d$|',
+                        f'(?<=Base)\d$|',
+                        f'(?<=Electrical\u0020)\d$|',
+                        f'(?<=Electrical)\d$|',
+                        f'(?<=ARDF\u0020)\d$|',
+                        f'(?<=ARDF)\d$|',
                         f'(?<=components\u0020)\d$|',
                         f'(?<=ADF\u0020)\d$|',
                         f'(?<=ADF)\d$|',
@@ -36,7 +41,7 @@ def insert_parts(brand_id, model_id, fn):
                         f'(?<=PANEL)\d$|',
                         f'\d/\d$|',
                         f'\(\d/\d\)|',
-                        f'\(\d\)$',
+                        f'\(\d\)$|',
                         f'\(\d\u0020/\u0020\d\)|',
                         f'(?<=sheet tray insert\u0020)\d$|',
                         f'(?<=sheet tray insert)\d$|',
@@ -121,14 +126,15 @@ def insert_parts(brand_id, model_id, fn):
                         f'(?<=components)\(\d\)$|',
                         f'(?<=components\u0020)\(\d\)$|',
                         f'(?<=components\u0020)\d$|',
-                        f'(?<=components)\d$',
-                        f'\W$|']
+                        f'(?<=components)\d$|',
+                        f'^\W{1,}|\W{1,}$']
 
             for bl in bad_list:
                 module_name = re.sub(f'{bl}', '', module_name, flags=re.IGNORECASE).strip()
 
-            module_name = re.sub(f'[\u0020]\W', '', module_name).strip()
             module_name = re.sub(f'\u0020{2,}', '\u0020', module_name).strip()
+            module_name = re.sub(f'^\W{1,}|\W{1,}$', '', module_name).strip()
+            module_name = re.sub(f'^\W{1,}|\W{1,}$', '', module_name).strip()
 
             if old_module != module_name:
                 old_module = module_name
@@ -144,37 +150,45 @@ def insert_parts(brand_id, model_id, fn):
                 module_id = old_module_id
 
         # добавляем в справочник наименование детали
-        if d[2]:
-            pn_id = get_id('pn', d[2])
-            if pn_id < 1:
-                pn_id = parts_db_utils.insert_dict_details(d[2])
-                parts_data.append({
-                    'id': pn_id,
-                    'pn': d[2]
-                })
+        if d[2] and str(d[2]) != 'nan':
+            pc_name = re.sub(f'^\W{1,}|\W{1,}$', '', d[2]).strip()
+            if pc_name:
+                pn_id = get_id('pn', pc_name)
+                if pn_id < 1:
+                    pn_id = parts_db_utils.insert_dict_details(pc_name)
+                    parts_data.append({
+                        'id': pn_id,
+                        'pn': pc_name
+                    })
 
         # добавляем картинку модуля
-        if d[4]:
+        if d[4] and str(d[4]) != 'nan':
             if old_img != d[4]:
                 img_id = parts_db_utils.insert_dict_module_image(d[4])
                 parts_db_utils.link_model_module_image(model_id, module_id, img_id)
                 old_img = d[4]
 
         # добавляем в partcodes новый парткод
-        if d[1] or str(d[1] != 'nan'):
-            pc_id = get_id('pc', d[1])
-            if pc_id < 1:
-                pc_id = parts_db_utils.insert_partcodes(d[1], d[3], pn_id, brand_id)
-                parts_data.append({
-                    'id': pc_id,
-                    'pc': d[1]
-                })
-        else:
+        if d[1] and str(d[1]) != 'nan':
+            pc_code = re.sub(f'^\W{1,}|\W{1,}$', '', d[1]).strip()
+            if pc_code:
+                pc_id = get_id('pc', pc_code)
+                if pc_id < 1:
+                    pc_id = parts_db_utils.insert_partcodes(pc_code, d[3], pn_id, brand_id)
+                    parts_data.append({
+                        'id': pc_id,
+                        'pc': pc_code
+                    })
+            elif pn_id:
+                article_code = gac.generate_article_partcode()
+                pc_id = parts_db_utils.insert_partcodes_article(article_code, d[3], pn_id, brand_id)
+        elif pn_id:
             article_code = gac.generate_article_partcode()
             pc_id = parts_db_utils.insert_partcodes_article(article_code, d[3], pn_id, brand_id)
 
         # линкуем парткод-модель-модуль
-        parts_db_utils.link_model_module_partcode(pc_id, model_id, module_id)
+        if pc_id and pn_id:
+            parts_db_utils.link_model_module_partcode(pc_id, model_id, module_id)
 
 
 def get_id(name, value):

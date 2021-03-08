@@ -1,9 +1,13 @@
 from datetime import datetime
+from logzero import logger, logfile
+
 import file_utils as fu
 import parser_utils as pu
 
 
 def main():
+    logfile('log_console.log')
+
     data = fu.load_parsed_models('db_file_list.csv', 'utf-8')
     brands = ['Brother', 'Canon', 'Duplo', 'Epson', 'HP', 'OKI', 'Lexmark', 'Mimaki', 'Kyocera', 'Konica-Minolta',
               'KIP', 'Konica', 'MB', 'Minolta', 'Mutoh', 'Panasonic', 'Pantum', 'Ricoh', 'Riso', 'Roland', 'Samsung',
@@ -19,3 +23,4 @@ if __name__ == '__main__':
     print(start_time)
     main()
     print(datetime.now() - start_time)
+    logger.info(datetime.now() - start_time)
