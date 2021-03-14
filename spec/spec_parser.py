@@ -9,7 +9,6 @@ from global_data import dict_model_options_data, model_options_data
 
 @sync_to_async
 def insert_options(model_id, fn):
-    model_option_id = 0
     caption_parent_id = 0
     dict_option_name_id = 0
     dict_option_value_id = 0
@@ -18,11 +17,6 @@ def insert_options(model_id, fn):
     data = fu.load_parsed_models(fn, 'Windows-1251')
     for d in data:
         if d:
-            # try:
-            #     print(f'\rspecifications: {d[0]} - {d[1]}', end='')
-            # except:
-            #     pass
-
             name = d[0]
             value = re.sub(r'(\smm+$)|(\sмм+$)|(\sстр+$)|(\sстр/мин$)|(\sкг$)|'
                            r'(\sВт$)|(\sлистов$)|(\sгг$)|(\sс$)|(\sсек$)', '', d[1])
@@ -44,19 +38,24 @@ def insert_options(model_id, fn):
                         dict_option_value_id = sdbu.insert_dictionary_model_options(value)
                         dict_model_options_data.append((dict_option_value_id, value))
 
-            if (name == 'Caption') | (name == 'Status'):
+            if name == 'Status':
+                status_id = search_model_options_data(dict_option_name_id, dict_option_value_id)
+                if status_id < 1:
+                    status_id = sdbu.insert_link_dictionary_model_options(dict_option_name_id, dict_option_value_id, 'Null')
+                    model_options_data.append([status_id, dict_option_name_id, dict_option_value_id, value])
+                sdbu.link_model_options(model_id, status_id)
+
+            elif name == 'Caption':
                 caption_parent_id = search_model_options_data(dict_option_name_id, dict_option_value_id)
                 if caption_parent_id < 1:
                     caption_parent_id = sdbu.insert_link_dictionary_model_options(dict_option_name_id, dict_option_value_id, 'Null')
-                    model_options_data.append([caption_parent_id, dict_option_name_id, dict_option_value_id])
-                sdbu.link_model_options(model_id, caption_parent_id)
+                    model_options_data.append([caption_parent_id, dict_option_name_id, dict_option_value_id, value])
 
             elif name == 'SubCaption':
-                sub_caption_parent_id = search_model_options_data(dict_option_name_id, dict_option_value_id)
+                sub_caption_parent_id = search_model_sub_caption(dict_option_name_id, dict_option_value_id, value)
                 if sub_caption_parent_id < 1:
                     sub_caption_parent_id = sdbu.insert_link_dictionary_model_options(dict_option_name_id, dict_option_value_id, caption_parent_id)
-                    model_options_data.append([sub_caption_parent_id, dict_option_name_id, dict_option_value_id])
-                sdbu.link_model_options(model_id, sub_caption_parent_id)
+                    model_options_data.append([sub_caption_parent_id, dict_option_name_id, dict_option_value_id, value])
 
             elif name == 'EndSubCaption':
                 sub_caption_parent_id = 0
@@ -66,8 +65,8 @@ def insert_options(model_id, fn):
                 else:
                     model_option_id = sdbu.insert_link_dictionary_model_options(dict_option_name_id, dict_option_value_id, caption_parent_id)
 
-            if model_option_id and model_id:
-                sdbu.link_model_options(model_id, model_option_id)
+                if model_option_id and model_id:
+                    sdbu.link_model_options(model_id, model_option_id)
 
 
 def set_convert(s):
@@ -81,8 +80,16 @@ def set_convert(s):
 def search_model_options_data(dict_option_name_id, dict_option_value_id):
     result = 0
     for item in model_options_data:
-        if item[1] == dict_option_name_id:
-            if item[2] == dict_option_value_id:
-                result = item[0]
-                break
+        if item[1] == dict_option_name_id and item[2] == dict_option_value_id:
+            result = item[0]
+            break
+    return result
+
+
+def search_model_sub_caption(dict_option_name_id, dict_option_value_id, value):
+    result = 0
+    for item in model_options_data:
+        if item[1] == dict_option_name_id and item[2] == dict_option_value_id and item[3] == value:
+            result = item[0]
+            break
     return result

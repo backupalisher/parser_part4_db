@@ -8,13 +8,11 @@ from spec import spec_parser, spec_db_utils as sdbu
 from parts import parts_utils
 import file_utils as fu
 from datetime import datetime
-from main import logger
 
 
 def insert_brands(data):
     for d in data:
         db_utils.insert_brand(d)
-        # print(d)
 
 
 def insert_models(data):
@@ -46,7 +44,6 @@ def data_analysis(data):
         brand = d[0]
         model = d[1]
         parsed_bool = False
-        # print()
 
         for pm in parsed_models:
             if model == pm[0]:
@@ -58,20 +55,12 @@ def data_analysis(data):
             continue
 
         print(model, datetime.now().strftime("%X"))
-        # logger.info(f'{model}, {datetime.now().strftime("%X")}')
         model_id = 0
         for key in gd.g_data:
             if model in key.keys():
                 brand_id = key[brand]
                 model_id = key[model]
                 break
-
-        # if brand != old_brand:
-        #     gd.erc_data = []
-        #     gd.parts_data = []
-        #     gd.detail_options_data = []
-        #     gd.spr_details_options_data = []
-        #     old_brand = brand
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -88,7 +77,6 @@ def data_analysis(data):
 
 async def init_start(brand_id, model_id, d):
     async_tasks = []
-
     if d[2]:
         async_tasks.append(spec_init(model_id, d[2]))
     if d[3]:

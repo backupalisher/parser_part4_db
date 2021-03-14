@@ -12,12 +12,12 @@ def insert_dictionary_model_options(data):
 def insert_link_dictionary_model_options(dictionary_model_caption_id, dictionary_model_option_id, parent_id):
     q = db.i_request(f"WITH s as (SELECT id FROM link_dictionary_model_options WHERE "
                      f"dictionary_model_caption_id = {dictionary_model_caption_id} AND "
-                     f"dictionary_model_option_id = {dictionary_model_option_id}), "
+                     f"dictionary_model_option_id = {dictionary_model_option_id} AND "
+                     f"parent_id = {parent_id}), "
                      f"i as (INSERT INTO link_dictionary_model_options (dictionary_model_caption_id, "
                      f"dictionary_model_option_id, parent_id) "
                      f"SELECT {dictionary_model_caption_id}, {dictionary_model_option_id}, {parent_id} "
                      f"WHERE NOT EXISTS (SELECT 1 FROM s) returning id) SELECT id FROM i UNION ALL SELECT id FROM s")
-
     return q[0][0]
 
 

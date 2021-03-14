@@ -24,3 +24,4 @@ if __name__ == '__main__':
     main()
     print(datetime.now() - start_time)
     logger.info(datetime.now() - start_time)
+
