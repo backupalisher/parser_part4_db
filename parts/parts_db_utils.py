@@ -11,9 +11,9 @@ def insert_dict_modules(param):
 
 def insert_partcodes(param, description, pn_id, brand_id):
     q = db.i_request(f"WITH s as (SELECT id FROM partcodes "
-                     f"WHERE LOWER(code) = LOWER('{param}') AND manufacturer = {brand_id}), i as "
+                     f"WHERE LOWER(code) = LOWER('{param}')), i as "
                      f"(INSERT INTO partcodes (code, description, manufacturer, dictionary_partcode_id) "
-                     f"SELECT '{param}', '{description}', {brand_id}, {pn_id}"
+                     f"SELECT '{param}', '{description}', {brand_id}, {pn_id} "
                      f"WHERE NOT EXISTS (SELECT 1 FROM s) RETURNING id) SELECT id FROM i UNION ALL SELECT id FROM s")
     return q[0][0]
 

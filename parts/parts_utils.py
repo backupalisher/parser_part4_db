@@ -170,7 +170,11 @@ def insert_parts(brand_id, model_id, fn):
 
         # добавляем в partcodes новый парткод
         if d[1] and str(d[1]) != 'nan':
-            pc_code = re.sub(f'^\W{1,}|\W{1,}$', '', d[1]).strip()
+            if isinstance(d[1], float):
+                d1 = str(int(d[1]))
+            else:
+                d1 = str(d[1])
+            pc_code = re.sub(f'^\W{1,}|\W{1,}$', '', d1).strip()
             if pc_code:
                 pc_id = get_id('pc', pc_code)
                 if pc_id < 1:
